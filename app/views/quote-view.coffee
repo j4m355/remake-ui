@@ -1,0 +1,8 @@
+template = require 'views/templates/quote'
+View = require 'views/base/view'
+
+module.exports = class QuoteView extends View
+  autoRender: yes
+  className: 'quote-page'
+  container: '#page-container'
+  template: template
