@@ -7,4 +7,8 @@ module.exports = class HomePageView extends View
   container: '#page-container'
   template: template
 
+  render:()=>
+  	super
+  	@$('.carousel').carousel()
+
         
