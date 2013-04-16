@@ -2,4 +2,116 @@
 
 <h1>Contact</h1>
 
+<h2>Contact us</h2><p>
+        By clicking on the chat icon below you can see if one of our team are online to
+        talk to you there and then about your issue.&nbsp;</p>
+        <p>
+            Livehelp chat is:
+        </p>
+        <div id="apDiv14">
+            <!-- stardevelop.com Live Help International Copyright - All Rights Reserved //-->
+            <!-- BEGIN Live Help HTML Code - NOT PERMITTED TO MODIFY IMAGE MAP/CODE/LINKS //-->
+            <a href="/livehelp/index.php" target="_blank" onclick="openLiveHelp(); return false">
+                <img src="/livehelp/include/status.php" id="LiveHelpStatus" name="LiveHelpStatus"
+                    border="0" alt="Live Help" onload="statusImagesLiveHelp[statusImagesLiveHelp.length] = this;" /></a>
+            <!-- END Live Help HTML -->
+<!-- END Live Help HTML Code - NOT PERMITTED TO MODIFY IMAGE MAP/CODE/LINKS //-->
+        </div>
+        <p style="font-size: xx-small">
+            (Click to continue)</p>
+        <p>
+            &nbsp;</p>
+        <p>
+            If you prefer you can leave us a quick <b><em>offline message</em></b> and we will get back to you.</p>
+        <p>
+            Please select which branch you would like to hear back from:</p>
+        <p>
+            <asp:RadioButton ID="rdoBelfast" runat="server" AutoPostBack="True" GroupName="region"
+                OnCheckedChanged="rdoBelfast_CheckedChanged" Text="Belfast" />
+        </p>
+        <p>
+            <asp:RadioButton ID="rdoDownpatrick" runat="server" AutoPostBack="True" GroupName="region"
+                OnCheckedChanged="rdoDownpatrick_CheckedChanged" Text="Downpatrick" />
+        </p>
+        <div align="center">
+            <p style="margin-left: 40px">
+                &nbsp;</p>
+            <asp:Panel ID="Panel1" runat="server" Visible="False">
+                <div class="style1">
+                    <asp:Label ID="lblName" runat="server" Text="Name:"></asp:Label>
+                    &nbsp;&nbsp;<asp:TextBox ID="txtName" runat="server" Width="260px"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ControlToValidate="txtName"
+                        ErrorMessage="Please provide a name" ForeColor="#CC0000"></asp:RequiredFieldValidator>
+                    <br />
+                    <asp:Label ID="lblQuery" runat="server" Text="Query:"></asp:Label>
+                    <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <asp:TextBox ID="txtQuery" runat="server" Height="78px" TextMode="MultiLine" Width="264px"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ControlToValidate="txtQuery"
+                        ErrorMessage="Please enter your query" ForeColor="#CC0000"></asp:RequiredFieldValidator>
+                    <br />
+                    <asp:Label ID="lblMethod" runat="server" Text="Contact Preference:"></asp:Label>
+                    &nbsp;<asp:RadioButton ID="rdoEmail" runat="server" GroupName="Contact" 
+                        Text="Email" AutoPostBack="True" />
+                    <asp:RadioButton ID="rdoText" runat="server" GroupName="Contact" Text="Text" 
+                        AutoPostBack="True" />
+                    <asp:RadioButton ID="rdoPhone" runat="server" GroupName="Contact" Text="Phone" 
+                        AutoPostBack="True" />
+                    <br />
+                    <br />
+                    <asp:Label ID="lblContact" runat="server" Text="Contact Details:"></asp:Label>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <asp:TextBox ID="txtContact" runat="server" Width="184px"></asp:TextBox>
+                    <asp:RegularExpressionValidator ID="RegularExpressionValidator2" runat="server" 
+                        ControlToValidate="txtContact" Display="Dynamic" Enabled="False" 
+                        ErrorMessage="Please remove spaces or ( ) + - symbols and ensure 11 digits" 
+                        ForeColor="Red" SetFocusOnError="True" 
+                        ValidationExpression="[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]"></asp:RegularExpressionValidator>
+                    <br />
+                    How did you find us:
+                    <asp:DropDownList ID="DropDownList2" runat="server">
+                        <asp:ListItem></asp:ListItem>
+                        <asp:ListItem>Google</asp:ListItem>
+                        <asp:ListItem>Google Map</asp:ListItem>
+                        <asp:ListItem>Other search engine</asp:ListItem>
+                        <asp:ListItem>Word of mouth</asp:ListItem>
+                        <asp:ListItem>Gumtree</asp:ListItem>
+                        <asp:ListItem>Business card through door</asp:ListItem>
+                        <asp:ListItem>Link from other site</asp:ListItem>
+                        <asp:ListItem>Other</asp:ListItem>
+                    </asp:DropDownList>
+                    <br />
+                    <br />
+                    <asp:Button ID="btnSubmit" runat="server" OnClick="Button1_Click" Text="Submit" Style="text-align: center" />
+                    <br />
+                    <br />
+                </div>
+            </asp:Panel>
+            <p>
+                <br />
+            </p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;
+            <p style="text-align: left">
+                &nbsp;</p>
+            <p style="text-align: left">
+                &nbsp;</p>
+            <p style="text-align: left">
+                &nbsp;</p>
+            <p style="text-align: left">
+                &nbsp;</p>
+            <p style="text-align: left">
+                &nbsp;</p>
+            <p style="text-align: left">
+                Alternatively you can contact us by:</p>
+            <p style="text-align: left">
+                Email: <a href="mailto:doctor@drpcni.com">doctor@drpcni.com</strong></a></p>
+            <p style="text-align: left">
+                Telephone: 07519746777 or 08717892042
+            </p>
+            <p style="text-align: left">
+                <span style="text-align: left">If we cannot take your call there and then, please leave
+                    a message and we will reply as soon as possible</span>.
+            </p>
+        </div>
+
 </div>
