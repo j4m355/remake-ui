@@ -12,20 +12,22 @@ module.exports = class ContactView extends View
   	@delegate 'click', '#submitContact', @postMessage
   	@delegate 'click', '#closeSuccess', @closeSuccess
   	@delegate 'click', '#closeError', @closeError
+  	@$('#contactSuccess').hide()
+  	@$('#contactError').show()
 
   postMessage:()=>
-  	$.ajax
+  	@$.ajax
   		url: "/api/contact/create",
   		type: "post",
   		data: $('#ContactForm').serialize()
   		success: ()->
-  			$('#contactSuccess').addClass("in")
+  			@$('#contactSuccess').show()
 		error: ()->
-			$$('#contactError').addClass("in")
+			@$('#contactError').show()
 
   closeSuccess:()=>
-  	$('#contactSuccess').hide()
+  	@$('#contactSuccess').hide()
 
   closeError:()=>
-  	$('#contactError').hide()
+  	@$('#contactError').hide()
 
