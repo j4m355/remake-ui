@@ -30,30 +30,42 @@
 
 
 
+<div id="contactSuccess" class="alert alert-success fade" data-alert="alert" target="#">
+    <a class="close" href="#">x</a>
+ <p> <strong>Thank you for your message we will be in touch soon. </strong>Please check your junk mail just in case.</P>
+</div>
 
-			<form class="form-horizontal">
+<div id="contactError" class="alert alert-error fade" data-alert="alert">
+    <a class="close" href="#">x</a>
+ <p> <strong>Oops somethign has gone wrong. </strong>Please contact us on 07519746777 and we can sort you out.</P>
+</div>
+
+
+
+
+			<form id="ContactForm" class="form-horizontal">
 			  <div class="control-group">
 			    <label class="control-label" for="inputEmail">Your Name</label>
 			    <div class="controls">
-			      <input type="text" id="inputEmail" placeholder="Your Name">
+			      <input type="text" id="contactName" name="contactName" placeholder="Your Name">
 			    </div>
 			  </div>
-			    <div class="control-group">
-			    <label class="control-label" for="inputEmail">Email or Phone</label>
+			    <div class="control-group">s
+			    <label class="control-label" for="contactEmail">Email or Phone</label>
 			    <div class="controls">
-			      <input type="text" id="inputEmail" placeholder="Email or Query">
+			      <input type="text" id="contactEmail" name="contactEmail" placeholder="Email or Query">
 			    </div>
 			  </div>
 			  <div class="control-group">
-			    <label class="control-label" for="inputPassword">Query</label>
+			    <label class="control-label" for="contactMessage">Query</label>
 			    <div class="controls">
-			      <textarea type="text" rows="3" placeholder="Query"/>
+			      <textarea type="text" id="contactMessage" name="contactMessage" rows="3" placeholder="Query"/>
 			    </div>
 			  </div>
 			  <div class="control-group">
 			  	<label class="control-label" for="inputDropDown">How did you find us?</label>
 			  	<div class="controls">
-			  		<select id="inputDropDown">
+			  		<select id="ContactMessage" name="ContactMessage">
   						<option>--Please Select--</option>
   						<option>Google</option>
   						<option>Returning Customer</option>
@@ -64,7 +76,7 @@
 			  </div>
 			  <div class="control-group">
 			    <div class="controls">			     
-			      <button type="submit" class="btn">Send</button>
+			      <a id="submitContact" href="#" class="btn">Send</a>
 			    </div>
 			  </div>
 			</form>
