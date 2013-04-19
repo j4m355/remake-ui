@@ -10,8 +10,8 @@ module.exports = class ContactView extends View
   initialize: ()=>
   	super
   	@delegate 'click', '#submitContact', @postMessage
-
-
+  	@delegate 'click', '#closeSuccess', @closeSuccess
+  	@delegate 'click', '#closeError', @closeError
 
   postMessage:()=>
   	$.ajax
@@ -22,3 +22,10 @@ module.exports = class ContactView extends View
   			$('#contactSuccess').addClass("in")
 		error: ()->
 			$$('#contactError').addClass("in")
+
+  closeSuccess:()=>
+  	$('#contactSuccess').hide()
+
+  closeError:()=>
+  	$('#contactError').hide()
+
