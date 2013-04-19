@@ -12,6 +12,9 @@ module.exports = class ContactView extends View
   	@delegate 'click', '#submitContact', @postMessage
   	@delegate 'click', '#closeSuccess', @closeSuccess
   	@delegate 'click', '#closeError', @closeError
+
+  render:()=>
+  	super
   	@$('#contactSuccess').hide()
   	@$('#contactError').show()
 
