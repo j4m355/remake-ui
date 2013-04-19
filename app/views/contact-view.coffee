@@ -16,7 +16,7 @@ module.exports = class ContactView extends View
   render:()=>
   	super
   	@$('#contactSuccess').hide()
-  	@$('#contactError').show()
+  	@$('#contactError').hide()
 
   postMessage:()=>
   	$.ajax
