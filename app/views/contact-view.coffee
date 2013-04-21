@@ -37,14 +37,16 @@ module.exports = class ContactView extends View
     @$('#contactError').hide()
 
   showSuccessAlert = (message)=>
-    @$('#sending').hide()
-    @$('#successMessage').html(message)
-    @$('#contactSuccess').show()
+    $('#sending').hide()
+    $('#successMessage').html(message)
+    $('#contactSuccess').show()
+    
 
   showErrorAlert = (message)=>
-    @$('#sending').hide()
-    @$('#errorMessage').html(message)
-    @$('#contactError').show()
+    $('#sending').hide()
+    $('#errorMessage').html(message)
+    $('#contactError').show()
+    
 
 
 
