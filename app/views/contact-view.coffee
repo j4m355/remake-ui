@@ -21,6 +21,7 @@ module.exports = class ContactView extends View
 
   postMessage:()=>
     #@$('#sending').show()
+    $('#contactError').hide()
     showSuccessAlert("<p> <strong>Thank you for your message we will be in touch soon. </strong>Please check your junk mail just in case.</P>")
     $.ajax
       url: "/api/contact/create",
