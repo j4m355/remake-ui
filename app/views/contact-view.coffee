@@ -27,7 +27,7 @@ module.exports = class ContactView extends View
       type: "post",
       data: $('#ContactForm').serialize()
       error: ()->
-        @$('#contactSuccess').hide()
+        $('#contactSuccess').hide()
         showErrorAlert("<p> <strong>Oops somethign has gone wrong. </strong>Please contact us on 07519746777 and we can sort you out.</P>")
 
   closeSuccess:()=>
