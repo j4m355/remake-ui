@@ -48,12 +48,18 @@ module.exports = class ContactView extends View
 
   validate = ()=>
     errors = []
-    errors.push "Please fill out the following information:"
+    errors.push "Please fill out the following information: <br>"
     if $('#contactName').val().length < 1
-      errors.push "Please fill in your name"
+      errors.push "Your Name <br>"
       #showErrorAlert("Please fill in your name")
     if $('#contactEmail').val().length < 1
-      errors.push "Please fill in your name"
+      errors.push "Your Email <br>"
+      #showErrorAlert("Please fill in your email")
+    if $('#contactMessage').val().length < 1
+      errors.push "Your Query <br>"
+      #showErrorAlert("Please fill in your email")
+    if $('#contactSource').val() == "--Please Select--"
+      errors.push "How you heard of us <br>"
       #showErrorAlert("Please fill in your email")
     if errors.length >1
       showErrorAlert(errors)
