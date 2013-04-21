@@ -17,14 +17,16 @@ module.exports = class ContactView extends View
     super
     @$('#contactSuccess').hide()
     @$('#contactError').hide()
+    @$('#sending').hide()
 
   postMessage:()=>
+    @$('#sending').show()
     $.ajax
       url: "/api/contact/create",
       type: "post",
       data: $('#ContactForm').serialize()
       success: ()->
-        showSuccessAlert("<p> <strong>Thank you for your message we will be in touch soon. </strong>Please check your junk mail just in case.</P>")
+        @showSuccessAlert("<p> <strong>Thank you for your message we will be in touch soon. </strong>Please check your junk mail just in case.</P>")
         #$('#contactSuccess').show()
       error: ()->
         $('#contactError').show()
@@ -36,6 +38,7 @@ module.exports = class ContactView extends View
     @$('#contactError').hide()
 
   showSuccessAlert:(message)=>
+    @$('#sending').hide()
     @$('#successMessage').html(message)
     @$('#contactSuccess').show()
 
