@@ -17,10 +17,9 @@ module.exports = class ContactView extends View
     super
     @$('#contactSuccess').hide()
     @$('#contactError').hide()
-    @$('#sending').hide()
 
   postMessage:()=>
-    #@$('#sending').show()
+    validate()
     $('#contactError').hide()
     showSuccessAlert("<p> <strong>Thank you for your message we will be in touch soon. </strong>Please check your junk mail just in case.</P>")
     $.ajax
@@ -38,16 +37,17 @@ module.exports = class ContactView extends View
     @$('#contactError').hide()
 
   showSuccessAlert = (message)=>
-    $('#sending').hide()
     $('#successMessage').html(message)
     $('#contactSuccess').show()
     
 
   showErrorAlert = (message)=>
-    $('#sending').hide()
     $('#errorMessage').html(message)
     $('#contactError').show()
-    
+
+  validate = ()=>
+    if $('#contactName').val().length < 1
+      showErrorAlert("Please fill in your name")
 
 
 
