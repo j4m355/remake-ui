@@ -40,8 +40,6 @@ module.exports = class ContactView extends View
   showSuccessAlert = (message)=>
     $('#successMessage').html(message)
     $('#contactSuccess').show()
-    
-
 
   showErrorAlert = (message)=>
     $('#errorMessage').html(message)
@@ -49,20 +47,40 @@ module.exports = class ContactView extends View
 
   validate = ()=>
     errors = []
+    contactName = $('#contactName').val()
+    contactEmail = $('#contactEmail').val()
+    contactMessage = $('#contactMessage').val()
+    contactSource = $('#contactSource').val()
+
     errors.push "<strong>Please fill out the following information: </strong><br>"
-    if $('#contactName').val().length < 1
+    if contactName.length < 1
       errors.push "-Your Name <br>"
-    if $('#contactEmail').val().length < 1
-      errors.push "-Your Email <br>"
-    if $('#contactMessage').val().length < 1
+    if contactMessage.length < 1
       errors.push "-Your Query <br>"
-    if $('#contactSource').val() == "--Please Select--"
+    if contactSource == "--Please Select--"
       errors.push "-How you heard of us <br>"
+    if contactEmail.length < 1
+      errors.push "-Your Email / Phone <br>"
+    else
+      if !validateEmail(contactEmail)
+        errors.push "-Invalid Email Address <br>"
+      if !validatePhone(contactEmail)
+        errors.push "-Invalid Phone Number <br>"
+
+
+
     if errors.length >1
       showErrorAlert(errors)
       return false
     else
       return true
+
+  validateEmail = (email)=>
+    re = /\S+@\S+\.\S+/
+    return re.test(email)
+
+  validatePhone = (number)=>
+    return number.split(/\d/).length===11
 
 
 
