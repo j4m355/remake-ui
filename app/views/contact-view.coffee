@@ -42,25 +42,22 @@ module.exports = class ContactView extends View
     $('#contactSuccess').show()
     
 
+
   showErrorAlert = (message)=>
     $('#errorMessage').html(message)
     $('#contactError').show()
 
   validate = ()=>
     errors = []
-    errors.push "Please fill out the following information: <br>"
+    errors.push "<strong>Please fill out the following information: </strong><br>"
     if $('#contactName').val().length < 1
-      errors.push "Your Name <br>"
-      #showErrorAlert("Please fill in your name")
+      errors.push "-Your Name <br>"
     if $('#contactEmail').val().length < 1
-      errors.push "Your Email <br>"
-      #showErrorAlert("Please fill in your email")
+      errors.push "-Your Email <br>"
     if $('#contactMessage').val().length < 1
-      errors.push "Your Query <br>"
-      #showErrorAlert("Please fill in your email")
+      errors.push "-Your Query <br>"
     if $('#contactSource').val() == "--Please Select--"
-      errors.push "How you heard of us <br>"
-      #showErrorAlert("Please fill in your email")
+      errors.push "-How you heard of us <br>"
     if errors.length >1
       showErrorAlert(errors)
       return false
