@@ -54,6 +54,8 @@ module.exports = class ContactView extends View
 
     isEmail = validateEmail(contactEmail)
     isPhone = validatePhone(contactEmail)
+    console.log "IsEmail: " + isEmail
+    console.log "isPhone: " + isPhone
 
     errors.push "<strong>Please fill out the following information: </strong><br>"
     if contactName.length < 1
@@ -68,13 +70,14 @@ module.exports = class ContactView extends View
       valid = false
       if !isEmail && !isPhone
         errors.push "-Invalid Phone Number or Email Address <br>"
-      if isEmail
+        valid = true
+      else if isEmail
         valid = true        
-      if isPhone
+      else if isPhone
         valid = true
       if !valid
         errors.push "-Invalid Phone Number or Email Address <br>"
-        
+
     if errors.length >1
       showErrorAlert(errors)
       return false
@@ -86,7 +89,8 @@ module.exports = class ContactView extends View
     return re.test(email)
 
   validatePhone = (number)=>
-    return number.split(/\d/).length==11
+    re = /\d{11}/
+    return re.test(number)
 
 
 
