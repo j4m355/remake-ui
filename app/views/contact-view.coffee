@@ -25,12 +25,10 @@ module.exports = class ContactView extends View
       url: "/api/contact/create",
       type: "post",
       data: $('#ContactForm').serialize()
-      success: ()->
-        @showSuccessAlert("<p> <strong>Thank you for your message we will be in touch soon. </strong>Please check your junk mail just in case.</P>")
-        @
+      success: (s)->
+        showSuccessAlert("<p> <strong>Thank you for your message we will be in touch soon. </strong>Please check your junk mail just in case.</P>")
       error: ()->
-        @showErrorAlert("<p> <strong>Oops somethign has gone wrong. </strong>Please contact us on 07519746777 and we can sort you out.</P>")
-        @
+        showErrorAlert("<p> <strong>Oops somethign has gone wrong. </strong>Please contact us on 07519746777 and we can sort you out.</P>")
 
   closeSuccess:()=>
     @$('#contactSuccess').hide()
@@ -38,12 +36,12 @@ module.exports = class ContactView extends View
   closeError:()=>
     @$('#contactError').hide()
 
-  showSuccessAlert:(message)=>
+  showSuccessAlert = (message)=>
     @$('#sending').hide()
     @$('#successMessage').html(message)
     @$('#contactSuccess').show()
 
-  showErrorAlert:(message)=>
+  showErrorAlert = (message)=>
     @$('#sending').hide()
     @$('#errorMessage').html(message)
     @$('#contactError').show()
