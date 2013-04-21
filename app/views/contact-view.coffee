@@ -65,15 +65,16 @@ module.exports = class ContactView extends View
     if contactEmail.length < 1
       errors.push "-Your Email / Phone <br>"
     else
+      valid = false
       if !isEmail && !isPhone
         errors.push "-Invalid Phone Number or Email Address <br>"
-      else if !isEmail && isPhone
-        errors.push "-Invalid Email Address <br>"
-      else if !isPhone && isEmail
-        errors.push "-Invalid Phone Number <br>"
-
-
-
+      if isEmail
+        valid = true        
+      if isPhone
+        valid = true
+      if !valid
+        errors.push "-Invalid Phone Number or Email Address <br>"
+        
     if errors.length >1
       showErrorAlert(errors)
       return false
