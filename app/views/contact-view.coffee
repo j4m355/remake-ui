@@ -80,7 +80,7 @@ module.exports = class ContactView extends View
     return re.test(email)
 
   validatePhone = (number)=>
-    return number.split(/\d/).length===11
+    return number.split(/\d/).length==11
 
 
 
