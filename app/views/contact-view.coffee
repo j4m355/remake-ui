@@ -67,9 +67,9 @@ module.exports = class ContactView extends View
     else
       if !isEmail && !isPhone
         errors.push "-Invalid Phone Number or Email Address <br>"
-      else if !isEmail
+      else if !isEmail && isPhone
         errors.push "-Invalid Email Address <br>"
-      else if !isPhone
+      else if !isPhone && isEmail
         errors.push "-Invalid Phone Number <br>"
 
 
