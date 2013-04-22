@@ -28,7 +28,7 @@ module.exports = class HeaderView extends View
         type: "post",
         data: $('#loginForm').serialize()
         success: (e)->
-            console.log e
+          showSuccessAlert(e)
         error: (e)->
           $('#loginSuccsesAlert').hide()
           showErrorAlert(e.toString())
