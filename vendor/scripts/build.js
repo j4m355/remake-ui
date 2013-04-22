@@ -1,3 +1,219 @@
+;(function(){
+
+/**
+ * Require the given path.
+ *
+ * @param {String} path
+ * @return {Object} exports
+ * @api public
+ */
+
+function require(path, parent, orig) {
+  var resolved = require.resolve(path);
+
+  // lookup failed
+  if (null == resolved) {
+    orig = orig || path;
+    parent = parent || 'root';
+    var err = new Error('Failed to require "' + orig + '" from "' + parent + '"');
+    err.path = orig;
+    err.parent = parent;
+    err.require = true;
+    throw err;
+  }
+
+  var module = require.modules[resolved];
+
+  // perform real require()
+  // by invoking the module's
+  // registered function
+  if (!module.exports) {
+    module.exports = {};
+    module.client = module.component = true;
+    module.call(this, module.exports, require.relative(resolved), module);
+  }
+
+  return module.exports;
+}
+
+/**
+ * Registered modules.
+ */
+
+require.modules = {};
+
+/**
+ * Registered aliases.
+ */
+
+require.aliases = {};
+
+/**
+ * Resolve `path`.
+ *
+ * Lookup:
+ *
+ *   - PATH/index.js
+ *   - PATH.js
+ *   - PATH
+ *
+ * @param {String} path
+ * @return {String} path or null
+ * @api private
+ */
+
+require.resolve = function(path) {
+  if (path.charAt(0) === '/') path = path.slice(1);
+  var index = path + '/index.js';
+
+  var paths = [
+    path,
+    path + '.js',
+    path + '.json',
+    path + '/index.js',
+    path + '/index.json'
+  ];
+
+  for (var i = 0; i < paths.length; i++) {
+    var path = paths[i];
+    if (require.modules.hasOwnProperty(path)) return path;
+  }
+
+  if (require.aliases.hasOwnProperty(index)) {
+    return require.aliases[index];
+  }
+};
+
+/**
+ * Normalize `path` relative to the current path.
+ *
+ * @param {String} curr
+ * @param {String} path
+ * @return {String}
+ * @api private
+ */
+
+require.normalize = function(curr, path) {
+  var segs = [];
+
+  if ('.' != path.charAt(0)) return path;
+
+  curr = curr.split('/');
+  path = path.split('/');
+
+  for (var i = 0; i < path.length; ++i) {
+    if ('..' == path[i]) {
+      curr.pop();
+    } else if ('.' != path[i] && '' != path[i]) {
+      segs.push(path[i]);
+    }
+  }
+
+  return curr.concat(segs).join('/');
+};
+
+/**
+ * Register module at `path` with callback `definition`.
+ *
+ * @param {String} path
+ * @param {Function} definition
+ * @api private
+ */
+
+require.register = function(path, definition) {
+  require.modules[path] = definition;
+};
+
+/**
+ * Alias a module definition.
+ *
+ * @param {String} from
+ * @param {String} to
+ * @api private
+ */
+
+require.alias = function(from, to) {
+  if (!require.modules.hasOwnProperty(from)) {
+    throw new Error('Failed to alias "' + from + '", it does not exist');
+  }
+  require.aliases[to] = from;
+};
+
+/**
+ * Return a require function relative to the `parent` path.
+ *
+ * @param {String} parent
+ * @return {Function}
+ * @api private
+ */
+
+require.relative = function(parent) {
+  var p = require.normalize(parent, '..');
+
+  /**
+   * lastIndexOf helper.
+   */
+
+  function lastIndexOf(arr, obj) {
+    var i = arr.length;
+    while (i--) {
+      if (arr[i] === obj) return i;
+    }
+    return -1;
+  }
+
+  /**
+   * The relative require() itself.
+   */
+
+  function localRequire(path) {
+    var resolved = localRequire.resolve(path);
+    return require(resolved, parent, path);
+  }
+
+  /**
+   * Resolve relative to the parent.
+   */
+
+  localRequire.resolve = function(path) {
+    var c = path.charAt(0);
+    if ('/' == c) return path.slice(1);
+    if ('.' == c) return require.normalize(p, path);
+
+    // resolve deps by returning
+    // the dep in the nearest "deps"
+    // directory
+    var segs = parent.split('/');
+    var i = lastIndexOf(segs, 'deps') + 1;
+    if (!i) i = 0;
+    path = segs.slice(0, i + 1).join('/') + '/deps/' + path;
+    return path;
+  };
+
+  /**
+   * Check if module is defined at `path`.
+   */
+
+  localRequire.exists = function(path) {
+    return require.modules.hasOwnProperty(localRequire.resolve(path));
+  };
+
+  return localRequire;
+};
+require.register("component-range/index.js", function(exports, require, module){
+
+module.exports = function(from, to, inclusive){
+  var ret = [];
+  if (inclusive) to++;
+
+  for (var n = from; n < to; ++n) {
+    ret.push(n);
+  }
+
+  return ret;
+}
+});
+require.register("component-jquery/index.js", function(exports, require, module){
 /*!
  * jQuery JavaScript Library v1.9.1
  * http://jquery.com/
@@ -9599,3 +9815,1368 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 }
 
 })( window );
+
+});
+require.register("component-indexof/index.js", function(exports, require, module){
+
+var indexOf = [].indexOf;
+
+module.exports = function(arr, obj){
+  if (indexOf) return arr.indexOf(obj);
+  for (var i = 0; i < arr.length; ++i) {
+    if (arr[i] === obj) return i;
+  }
+  return -1;
+};
+});
+require.register("component-emitter/index.js", function(exports, require, module){
+
+/**
+ * Module dependencies.
+ */
+
+var index = require('indexof');
+
+/**
+ * Expose `Emitter`.
+ */
+
+module.exports = Emitter;
+
+/**
+ * Initialize a new `Emitter`.
+ *
+ * @api public
+ */
+
+function Emitter(obj) {
+  if (obj) return mixin(obj);
+};
+
+/**
+ * Mixin the emitter properties.
+ *
+ * @param {Object} obj
+ * @return {Object}
+ * @api private
+ */
+
+function mixin(obj) {
+  for (var key in Emitter.prototype) {
+    obj[key] = Emitter.prototype[key];
+  }
+  return obj;
+}
+
+/**
+ * Listen on the given `event` with `fn`.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.on = function(event, fn){
+  this._callbacks = this._callbacks || {};
+  (this._callbacks[event] = this._callbacks[event] || [])
+    .push(fn);
+  return this;
+};
+
+/**
+ * Adds an `event` listener that will be invoked a single
+ * time then automatically removed.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.once = function(event, fn){
+  var self = this;
+  this._callbacks = this._callbacks || {};
+
+  function on() {
+    self.off(event, on);
+    fn.apply(this, arguments);
+  }
+
+  fn._off = on;
+  this.on(event, on);
+  return this;
+};
+
+/**
+ * Remove the given callback for `event` or all
+ * registered callbacks.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.off =
+Emitter.prototype.removeListener =
+Emitter.prototype.removeAllListeners = function(event, fn){
+  this._callbacks = this._callbacks || {};
+
+  // all
+  if (0 == arguments.length) {
+    this._callbacks = {};
+    return this;
+  }
+
+  // specific event
+  var callbacks = this._callbacks[event];
+  if (!callbacks) return this;
+
+  // remove all handlers
+  if (1 == arguments.length) {
+    delete this._callbacks[event];
+    return this;
+  }
+
+  // remove specific handler
+  var i = index(callbacks, fn._off || fn);
+  if (~i) callbacks.splice(i, 1);
+  return this;
+};
+
+/**
+ * Emit `event` with the given args.
+ *
+ * @param {String} event
+ * @param {Mixed} ...
+ * @return {Emitter}
+ */
+
+Emitter.prototype.emit = function(event){
+  this._callbacks = this._callbacks || {};
+  var args = [].slice.call(arguments, 1)
+    , callbacks = this._callbacks[event];
+
+  if (callbacks) {
+    callbacks = callbacks.slice(0);
+    for (var i = 0, len = callbacks.length; i < len; ++i) {
+      callbacks[i].apply(this, args);
+    }
+  }
+
+  return this;
+};
+
+/**
+ * Return array of callbacks for `event`.
+ *
+ * @param {String} event
+ * @return {Array}
+ * @api public
+ */
+
+Emitter.prototype.listeners = function(event){
+  this._callbacks = this._callbacks || {};
+  return this._callbacks[event] || [];
+};
+
+/**
+ * Check if this emitter has `event` handlers.
+ *
+ * @param {String} event
+ * @return {Boolean}
+ * @api public
+ */
+
+Emitter.prototype.hasListeners = function(event){
+  return !! this.listeners(event).length;
+};
+
+});
+require.register("component-in-groups-of/index.js", function(exports, require, module){
+
+module.exports = function(arr, n){
+  var ret = [];
+  var group = [];
+  var len = arr.length;
+  var per = len * (n / len);
+
+  for (var i = 0; i < len; ++i) {
+    group.push(arr[i]);
+    if ((i + 1) % n == 0) {
+      ret.push(group);
+      group = [];
+    }
+  }
+
+  if (group.length) ret.push(group);
+
+  return ret;
+};
+});
+require.register("component-calendar/index.js", function(exports, require, module){
+
+module.exports = require('./lib/calendar');
+});
+require.register("component-calendar/lib/utils.js", function(exports, require, module){
+
+/**
+ * Clamp `month`.
+ *
+ * @param {Number} month
+ * @return {Number}
+ * @api public
+ */
+
+exports.clamp = function(month){
+  if (month > 11) return 0;
+  if (month < 0) return 11;
+  return month;
+};
+
+});
+require.register("component-calendar/lib/template.js", function(exports, require, module){
+module.exports = '<table class="calendar-table">\n  <thead>\n    <tr>\n      <td class="prev"><a href="#">←</a></td>\n      <td colspan="5" class="title"><span class="month"></span> <span class="year"></span></td>\n      <td class="next"><a href="#">→</a></td>\n    </tr>\n  </thead>\n  <tbody>\n  </tbody>\n</table>';
+});
+require.register("component-calendar/lib/calendar.js", function(exports, require, module){
+
+/**
+ * Module dependencies.
+ */
+
+var o = require('jquery')
+  , Emitter = require('emitter')
+  , template = require('./template')
+  , Days = require('./days')
+  , clamp = require('./utils').clamp;
+
+/**
+ * Expose `Calendar`.
+ */
+
+module.exports = Calendar;
+
+/**
+ * Initialize a new `Calendar`
+ * with the given `date` defaulting
+ * to now.
+ *
+ * Events:
+ *
+ *  - `prev` when the prev link is clicked
+ *  - `next` when the next link is clicked
+ *  - `change` (date) when the selected date is modified
+ *
+ * @params {Date} date
+ * @api public
+ */
+
+function Calendar(date) {
+  Emitter.call(this);
+  var self = this;
+  this.el = o('<div class=calendar></div>');
+  this.days = new Days;
+  this.el.append(this.days.el);
+  this.on('change', this.show.bind(this));
+  this.days.on('prev', this.prev.bind(this));
+  this.days.on('next', this.next.bind(this));
+  this.days.on('year', this.menuChange.bind(this, 'year'));
+  this.days.on('month', this.menuChange.bind(this, 'month'));
+  this.show(date || new Date);
+  this.days.on('change', function(date){
+    self.emit('change', date);
+  });
+}
+
+/**
+ * Mixin emitter.
+ */
+
+Emitter(Calendar.prototype);
+
+/**
+ * Add class `name` to differentiate this
+ * specific calendar for styling purposes,
+ * for example `calendar.addClass('date-picker')`.
+ *
+ * @param {String} name
+ * @return {Calendar}
+ * @api public
+ */
+
+Calendar.prototype.addClass = function(name){
+  this.el.addClass(name);
+  return this;
+};
+
+/**
+ * Select `date`.
+ *
+ * @param {Date} date
+ * @return {Calendar}
+ * @api public
+ */
+
+Calendar.prototype.select = function(date){
+  this.selected = date;
+  this.days.select(date);
+  this.show(date);
+  return this;
+};
+
+/**
+ * Show `date`.
+ *
+ * @param {Date} date
+ * @return {Calendar}
+ * @api public
+ */
+
+Calendar.prototype.show = function(date){
+  this._date = date;
+  this.days.show(date);
+  return this;
+};
+
+/**
+ * Enable a year dropdown.
+ *
+ * @param {Number} from
+ * @param {Number} to
+ * @return {Calendar}
+ * @api public
+ */
+
+Calendar.prototype.showYearSelect = function(from, to){
+  from = from || this._date.getFullYear() - 10;
+  to = to || this._date.getFullYear() + 10;
+  this.days.yearMenu(from, to);
+  this.show(this._date);
+  return this;
+};
+
+/**
+ * Enable a month dropdown.
+ *
+ * @return {Calendar}
+ * @api public
+ */
+
+Calendar.prototype.showMonthSelect = function(){
+  this.days.monthMenu();
+  this.show(this._date);
+  return this;
+};
+
+/**
+ * Return the previous month.
+ *
+ * @return {Date}
+ * @api private
+ */
+
+Calendar.prototype.prevMonth = function(){
+  var date = new Date(this._date);
+  date.setDate(1);
+  date.setMonth(date.getMonth() - 1);
+  return date;
+};
+
+/**
+ * Return the next month.
+ *
+ * @return {Date}
+ * @api private
+ */
+
+Calendar.prototype.nextMonth = function(){
+  var date = new Date(this._date);
+  date.setDate(1);
+  date.setMonth(date.getMonth() + 1);
+  return date;
+};
+
+/**
+ * Show the prev view.
+ *
+ * @return {Calendar}
+ * @api public
+ */
+
+Calendar.prototype.prev = function(){
+  this.show(this.prevMonth());
+  this.emit('view change', this.days.selectedMonth(), 'prev');
+  return this;
+};
+
+/**
+ * Show the next view.
+ *
+ * @return {Calendar}
+ * @api public
+ */
+
+Calendar.prototype.next = function(){
+  this.show(this.nextMonth());
+  this.emit('view change', this.days.selectedMonth(), 'next');
+  return this;
+};
+
+/**
+ * Switch to the year or month selected by dropdown menu.
+ *
+ * @return {Calendar}
+ * @api public
+ */
+
+Calendar.prototype.menuChange = function(action){
+  var date = this.days.selectedMonth();
+  this.show(date);
+  this.emit('view change', date, action);
+  return this;
+};
+
+});
+require.register("component-calendar/lib/days.js", function(exports, require, module){
+
+/**
+ * Module dependencies.
+ */
+
+var o = require('jquery')
+  , Emitter = require('emitter')
+  , template = require('./template')
+  , inGroupsOf = require('in-groups-of')
+  , clamp = require('./utils').clamp
+  , range = require('range')
+
+/**
+ * Days.
+ */
+
+var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+/**
+ * Months.
+ */
+
+var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+/**
+ * Get days in `month` for `year`.
+ *
+ * @param {Number} month
+ * @param {Number} year
+ * @return {Number}
+ * @api private
+ */
+
+function daysInMonth(month, year) {
+  return [31, (isLeapYear(year) ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month];
+}
+
+/**
+ * Check if `year` is a leap year.
+ *
+ * @param {Number} year
+ * @return {Boolean}
+ * @api private
+ */
+
+function isLeapYear(year) {
+  return (0 == year % 400)
+    || ((0 == year % 4) && (0 != year % 100))
+    || (0 == year);
+}
+
+/**
+ * Expose `Days`.
+ */
+
+module.exports = Days;
+
+/**
+ * Initialize a new `Days` view.
+ *
+ * Emits:
+ *
+ *   - `prev` when prev link is clicked
+ *   - `next` when next link is clicked
+ *   - `change` (date) when a date is selected
+ *
+ * @api public
+ */
+
+function Days() {
+  Emitter.call(this);
+  var self = this;
+  this.el = o(template).addClass('calendar-days');
+  this.head = this.el.find('thead');
+  this.body = this.el.find('tbody');
+  this.title = this.head.find('.title');
+  this.select(new Date);
+
+  // emit "day"
+  this.body.on('click', 'a', function(e){
+    var el = o(e.target);
+    var day = parseInt(el.text(), 10);
+    var data = el.data('date').split('-');
+    var year = data[0];
+    var month = data[1];
+    var date = new Date;
+    date.setYear(year);
+    date.setMonth(month);
+    date.setDate(day);
+    self.select(date);
+    self.emit('change', date);
+    return false;
+  });
+
+  // emit "prev"
+  this.el.find('.prev').click(function(){
+    self.emit('prev');
+    return false;
+  });
+
+  // emit "next"
+  this.el.find('.next').click(function(){
+    self.emit('next');
+    return false;
+  });
+}
+
+/**
+ * Mixin emitter.
+ */
+
+Emitter(Days.prototype);
+
+/**
+ * Select the given `date`.
+ *
+ * @param {Date} date
+ * @return {Days}
+ * @api public
+ */
+
+Days.prototype.select = function(date){
+  this.selected = date;
+  return this;
+};
+
+/**
+ * Show date selection.
+ *
+ * @param {Date} date
+ * @api public
+ */
+
+Days.prototype.show = function(date){
+  var year = date.getFullYear();
+  var month = date.getMonth();
+  this.showSelectedYear(year);
+  this.showSelectedMonth(month);
+  this.head.find('.subheading').remove();
+  this.head.append(this.renderHeading(2));
+  this.body.empty();
+  this.body.append(this.renderDays(date));
+};
+
+/**
+ * Enable a year dropdown.
+ *
+ * @param {Number} from
+ * @param {Number} to
+ * @api public
+ */
+
+Days.prototype.yearMenu = function(from, to){
+  this.selectYear = true;
+  this.title.find('.year').html(yearDropdown(from, to));
+  var self = this;
+  this.title.find('.year .calendar-select').change(function(){
+    self.emit('year');
+    return false;
+  });
+};
+
+/**
+ * Enable a month dropdown.
+ *
+ * @api public
+ */
+
+Days.prototype.monthMenu = function(){
+  this.selectMonth = true;
+  this.title.find('.month').html(monthDropdown());
+  var self = this;
+  this.title.find('.month .calendar-select').change(function(){
+    self.emit('month');
+    return false;
+  });
+};
+
+/**
+ * Return current year of view from title.
+ *
+ * @api private
+ */
+
+Days.prototype.titleYear = function(){
+  if (this.selectYear) {
+    return this.title.find('.year .calendar-select').val();
+  } else {
+    return this.title.find('.year').text();
+  }
+};
+
+/**
+ * Return current month of view from title.
+ *
+ * @api private
+ */
+
+Days.prototype.titleMonth = function(){
+  if (this.selectMonth) {
+    return this.title.find('.month .calendar-select').val();
+  } else {
+    return this.title.find('.month').text();
+  }
+};
+
+/**
+ * Return a date based on the field-selected month.
+ *
+ * @api public
+ */
+
+Days.prototype.selectedMonth = function(){
+  return new Date(this.titleYear(), this.titleMonth(), 1);
+};
+
+/**
+ * Render days of the week heading with
+ * the given `length`, for example 2 for "Tu",
+ * 3 for "Tue" etc.
+ *
+ * @param {String} len
+ * @return {Element}
+ * @api private
+ */
+
+Days.prototype.renderHeading = function(len){
+  var rows = '<tr class=subheading>' + days.map(function(day){
+    return '<th>' + day.slice(0, len) + '</th>';
+  }).join('') + '</tr>';
+  return o(rows);
+};
+
+/**
+ * Render days for `date`.
+ *
+ * @param {Date} date
+ * @return {Element}
+ * @api private
+ */
+
+Days.prototype.renderDays = function(date){
+  var rows = this.rowsFor(date);
+  var html = rows.map(function(row){
+    return '<tr>' + row.join('') + '</tr>';
+  }).join('\n');
+  return o(html);
+};
+
+/**
+ * Return rows array for `date`.
+ *
+ * This method calculates the "overflow"
+ * from the previous month and into
+ * the next in order to display an
+ * even 5 rows. 
+ *
+ * @param {Date} date
+ * @return {Array}
+ * @api private
+ */
+
+Days.prototype.rowsFor = function(date){
+  var selected = this.selected;
+  var selectedDay = selected.getDate();
+  var selectedMonth = selected.getMonth();
+  var selectedYear = selected.getFullYear();
+  var month = date.getMonth();
+  var year = date.getFullYear();
+
+  // calculate overflow
+  var start = new Date(date);
+  start.setDate(1);
+  var before = start.getDay();
+  var total = daysInMonth(month, year);
+  var perRow = 7;
+  var totalShown = perRow * Math.ceil((total + before) / perRow);
+  var after = totalShown - (total + before);
+  var cells = [];
+
+  // cells before
+  cells = cells.concat(cellsBefore(before, month, year));
+
+  // current cells 
+  for (var i = 0; i < total; ++i) {
+    var day = i + 1;
+    var date = 'data-date=' + [year, month, day].join('-');
+    if (day == selectedDay && month == selectedMonth && year == selectedYear) {
+      cells.push('<td class=selected><a href="#" ' + date + '>' + day + '</a></td>');
+    } else {
+      cells.push('<td><a href="#" ' + date + '>' + day + '</a></td>');
+    }
+  }
+
+  // after cells
+  cells = cells.concat(cellsAfter(after, month, year));
+
+  return inGroupsOf(cells, 7);
+};
+
+/**
+ * Update view title or select input for `year`.
+ *
+ * @param {Number} year
+ * @api private
+ */
+
+Days.prototype.showSelectedYear = function(year){
+  if (this.selectYear) {
+    this.title.find('.year .calendar-select').val(year);
+  } else {
+    this.title.find('.year').text(year);
+  }
+};
+
+/**
+ * Update view title or select input for `month`.
+ *
+ * @param {Number} month
+ * @api private
+ */
+
+Days.prototype.showSelectedMonth = function(month) {
+  if (this.selectMonth) {
+    this.title.find('.month .calendar-select').val(month);
+  } else {
+    this.title.find('.month').text(months[month]);
+  }
+};
+
+/**
+ * Return `n` days before `month`.
+ *
+ * @param {Number} n
+ * @param {Number} month
+ * @return {Array}
+ * @api private
+ */
+
+function cellsBefore(n, month, year){
+  var cells = [];
+  if (month == 0) --year;
+  var prev = clamp(month - 1);
+  var before = daysInMonth(prev, year);
+  while (n--) cells.push(prevMonthDay(year, prev, before--));
+  return cells.reverse();
+}
+
+/**
+ * Return `n` days after `month`.
+ *
+ * @param {Number} n
+ * @param {Number} month
+ * @return {Array}
+ * @api private
+ */
+
+function cellsAfter(n, month, year){
+  var cells = [];
+  var day = 0;
+  if (month == 11) ++year;
+  var next = clamp(month + 1);
+  while (n--) cells.push(nextMonthDay(year, next, ++day));
+  return cells;
+}
+
+/**
+ * Prev month day template.
+ */
+
+function prevMonthDay(year, month, day) {
+  var date = 'data-date=' + [year, month, day].join('-');
+  return '<td><a href="#" ' + date + ' class=prev-day>' + day + '</a></td>';
+}
+
+/**
+ * Next month day template.
+ */
+
+function nextMonthDay(year, month, day) {
+  var date = 'data-date=' + [year, month, day].join('-');
+  return '<td><a href="#" ' + date + ' class=next-day>' + day + '</a></td>';
+}
+
+/**
+ * Year dropdown template.
+ */
+
+function yearDropdown(from, to) {
+  var years = range(from, to, 'inclusive');
+  var options = o.map(years, yearOption).join('');
+  return '<select class="calendar-select">' + options + '</select>';
+}
+
+/**
+ * Month dropdown template.
+ */
+
+function monthDropdown() {
+  var options = o.map(months, monthOption).join('');
+  return '<select class="calendar-select">' + options + '</select>';
+}
+
+/**
+ * Year dropdown option template.
+ */
+
+function yearOption(year) {
+  return '<option value="' + year + '">' + year + '</option>';
+}
+
+/**
+ * Month dropdown option template.
+ */
+
+function monthOption(month, i) {
+  return '<option value="' + i + '">' + month + '</option>';
+}
+
+});
+require.register("component-css/index.js", function(exports, require, module){
+
+/**
+ * Properties to ignore appending "px".
+ */
+
+var ignore = {
+  columnCount: true,
+  fillOpacity: true,
+  fontWeight: true,
+  lineHeight: true,
+  opacity: true,
+  orphans: true,
+  widows: true,
+  zIndex: true,
+  zoom: true
+};
+
+/**
+ * Set `el` css values.
+ *
+ * @param {Element} el
+ * @param {Object} obj
+ * @return {Element}
+ * @api public
+ */
+
+module.exports = function(el, obj){
+  for (var key in obj) {
+    var val = obj[key];
+    if ('number' == typeof val && !ignore[key]) val += 'px';
+    el.style[key] = val;
+  }
+  return el;
+};
+
+});
+require.register("visionmedia-debug/index.js", function(exports, require, module){
+if ('undefined' == typeof window) {
+  module.exports = require('./lib/debug');
+} else {
+  module.exports = require('./debug');
+}
+
+});
+require.register("visionmedia-debug/debug.js", function(exports, require, module){
+
+/**
+ * Expose `debug()` as the module.
+ */
+
+module.exports = debug;
+
+/**
+ * Create a debugger with the given `name`.
+ *
+ * @param {String} name
+ * @return {Type}
+ * @api public
+ */
+
+function debug(name) {
+  if (!debug.enabled(name)) return function(){};
+
+  return function(fmt){
+    fmt = coerce(fmt);
+
+    var curr = new Date;
+    var ms = curr - (debug[name] || curr);
+    debug[name] = curr;
+
+    fmt = name
+      + ' '
+      + fmt
+      + ' +' + debug.humanize(ms);
+
+    // This hackery is required for IE8
+    // where `console.log` doesn't have 'apply'
+    window.console
+      && console.log
+      && Function.prototype.apply.call(console.log, console, arguments);
+  }
+}
+
+/**
+ * The currently active debug mode names.
+ */
+
+debug.names = [];
+debug.skips = [];
+
+/**
+ * Enables a debug mode by name. This can include modes
+ * separated by a colon and wildcards.
+ *
+ * @param {String} name
+ * @api public
+ */
+
+debug.enable = function(name) {
+  try {
+    localStorage.debug = name;
+  } catch(e){}
+
+  var split = (name || '').split(/[\s,]+/)
+    , len = split.length;
+
+  for (var i = 0; i < len; i++) {
+    name = split[i].replace('*', '.*?');
+    if (name[0] === '-') {
+      debug.skips.push(new RegExp('^' + name.substr(1) + '$'));
+    }
+    else {
+      debug.names.push(new RegExp('^' + name + '$'));
+    }
+  }
+};
+
+/**
+ * Disable debug output.
+ *
+ * @api public
+ */
+
+debug.disable = function(){
+  debug.enable('');
+};
+
+/**
+ * Humanize the given `ms`.
+ *
+ * @param {Number} m
+ * @return {String}
+ * @api private
+ */
+
+debug.humanize = function(ms) {
+  var sec = 1000
+    , min = 60 * 1000
+    , hour = 60 * min;
+
+  if (ms >= hour) return (ms / hour).toFixed(1) + 'h';
+  if (ms >= min) return (ms / min).toFixed(1) + 'm';
+  if (ms >= sec) return (ms / sec | 0) + 's';
+  return ms + 'ms';
+};
+
+/**
+ * Returns true if the given mode name is enabled, false otherwise.
+ *
+ * @param {String} name
+ * @return {Boolean}
+ * @api public
+ */
+
+debug.enabled = function(name) {
+  for (var i = 0, len = debug.skips.length; i < len; i++) {
+    if (debug.skips[i].test(name)) {
+      return false;
+    }
+  }
+  for (var i = 0, len = debug.names.length; i < len; i++) {
+    if (debug.names[i].test(name)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+/**
+ * Coerce `val`.
+ */
+
+function coerce(val) {
+  if (val instanceof Error) return val.stack || val.message;
+  return val;
+}
+
+// persist
+
+if (window.localStorage) debug.enable(localStorage.debug);
+
+});
+require.register("component-autoscale-canvas/index.js", function(exports, require, module){
+
+/**
+ * Retina-enable the given `canvas`.
+ *
+ * @param {Canvas} canvas
+ * @return {Canvas}
+ * @api public
+ */
+
+module.exports = function(canvas){
+  var ctx = canvas.getContext('2d');
+  var ratio = window.devicePixelRatio || 1;
+  if (1 != ratio) {
+    canvas.style.width = canvas.width + 'px';
+    canvas.style.height = canvas.height + 'px';
+    canvas.width *= ratio;
+    canvas.height *= ratio;
+    ctx.scale(ratio, ratio);
+  }
+  return canvas;
+};
+});
+require.register("component-raf/index.js", function(exports, require, module){
+
+module.exports = window.requestAnimationFrame
+  || window.webkitRequestAnimationFrame
+  || window.mozRequestAnimationFrame
+  || window.oRequestAnimationFrame
+  || window.msRequestAnimationFrame
+  || fallback;
+
+var prev = new Date().getTime();
+function fallback(fn) {
+  var curr = new Date().getTime();
+  var ms = Math.max(0, 16 - (curr - prev));
+  setTimeout(fn, ms);
+  prev = curr;
+}
+
+});
+require.register("component-spinner/index.js", function(exports, require, module){
+
+/**
+ * Module dependencies.
+ */
+
+var autoscale = require('autoscale-canvas');
+var raf = require('raf');
+
+/**
+ * Expose `Spinner`.
+ */
+
+module.exports = Spinner;
+
+/**
+ * Initialize a new `Spinner`.
+ */
+
+function Spinner() {
+  var self = this;
+  this.percent = 0;
+  this.el = document.createElement('canvas');
+  this.ctx = this.el.getContext('2d');
+  this.size(50);
+  this.fontSize(11);
+  this.speed(60);
+  this.font('helvetica, arial, sans-serif');
+  this.stopped = false;
+
+  (function animate() {
+    if (self.stopped) return;
+    raf(animate);
+    self.percent = (self.percent + self._speed / 36) % 100;
+    self.draw(self.ctx);
+  })();
+}
+
+/**
+ * Stop the animation.
+ *
+ * @api public
+ */
+
+Spinner.prototype.stop = function(){
+  this.stopped = true;
+};
+
+/**
+ * Set spinner size to `n`.
+ *
+ * @param {Number} n
+ * @return {Spinner}
+ * @api public
+ */
+
+Spinner.prototype.size = function(n){
+  this.el.width = n;
+  this.el.height = n;
+  autoscale(this.el);
+  return this;
+};
+
+/**
+ * Set text to `str`.
+ *
+ * @param {String} str
+ * @return {Spinner}
+ * @api public
+ */
+
+Spinner.prototype.text = function(str){
+  this._text = str;
+  return this;
+};
+
+/**
+ * Set font size to `n`.
+ *
+ * @param {Number} n
+ * @return {Spinner}
+ * @api public
+ */
+
+Spinner.prototype.fontSize = function(n){
+  this._fontSize = n;
+  return this;
+};
+
+/**
+ * Set font `family`.
+ *
+ * @param {String} family
+ * @return {Spinner}
+ * @api public
+ */
+
+Spinner.prototype.font = function(family){
+  this._font = family;
+  return this;
+};
+
+/**
+ * Set speed to `n` rpm.
+ *
+ * @param {Number} n
+ * @return {Spinner}
+ * @api public
+ */
+
+Spinner.prototype.speed = function(n) {
+  this._speed = n;
+  return this;
+};
+
+/**
+ * Make the spinner light colored.
+ *
+ * @return {Spinner}
+ * @api public
+ */
+
+Spinner.prototype.light = function(){
+  this._light = true;
+  return this;
+};
+
+/**
+ * Draw on `ctx`.
+ *
+ * @param {CanvasRenderingContext2d} ctx
+ * @return {Spinner}
+ * @api private
+ */
+
+Spinner.prototype.draw = function(ctx){
+  var percent = Math.min(this.percent, 100)
+    , ratio = window.devicePixelRatio || 1
+    , size = this.el.width / ratio
+    , half = size / 2
+    , x = half
+    , y = half
+    , rad = half - 1
+    , fontSize = this._fontSize
+    , light = this._light;
+
+  ctx.font = fontSize + 'px ' + this._font;
+
+  var angle = Math.PI * 2 * (percent / 100);
+  ctx.clearRect(0, 0, size, size);
+
+  // outer circle
+  var grad = ctx.createLinearGradient(
+    half + Math.sin(Math.PI * 1.5 - angle) * half,
+    half + Math.cos(Math.PI * 1.5 - angle) * half,
+    half + Math.sin(Math.PI * 0.5 - angle) * half,
+    half + Math.cos(Math.PI * 0.5 - angle) * half
+  );
+
+  // color
+  if (light) {
+    grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    grad.addColorStop(1, 'rgba(255, 255, 255, 1)');
+  } else {
+    grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 1)');
+  }
+
+  ctx.strokeStyle = grad;
+  ctx.beginPath();
+  ctx.arc(x, y, rad, angle - Math.PI, angle, false);
+  ctx.stroke();
+
+  // inner circle
+  ctx.strokeStyle = light ? 'rgba(255, 255, 255, .4)' : '#eee';
+  ctx.beginPath();
+  ctx.arc(x, y, rad - 1, 0, Math.PI * 2, true);
+  ctx.stroke();
+
+  // text
+  var text = this._text || ''
+    , w = ctx.measureText(text).width;
+
+  if (light) ctx.fillStyle = 'rgba(255, 255, 255, .9)';
+  ctx.fillText(
+      text
+    , x - w / 2 + 1
+    , y + fontSize / 2 - 1);
+
+  return this;
+};
+
+
+});
+require.register("component-spin/index.js", function(exports, require, module){
+
+/**
+ * Module dependencies.
+ */
+
+var Spinner = require('spinner')
+  , debug = require('debug')('spin')
+  , css = require('css');
+
+/**
+ * Add a spinner to `el`,
+ * and adjust size and position
+ * based on `el`'s box.
+ *
+ * Options:
+ *
+ *    - `delay` milliseconds defaulting to 300
+ *    - `size` size defaults to 1/5th the parent dimensions
+ *
+ * @param {Element} el
+ * @param {Object} options
+ * @return {Spinner}
+ * @api public
+ */
+
+module.exports = function(el, options){
+  if (!el) throw new Error('element required');
+
+  var appended = false;
+  var spin = new Spinner(el);
+  options = options || {};
+  var ms = options.delay || 300;
+
+  var w = el.offsetWidth;
+  var h = el.offsetHeight;
+
+  // size
+  var s = options.size || w / 5;
+  spin.size(s);
+  debug('show %dpx (%dms)', s, ms);
+
+  // position
+  css(spin.el, {
+    position: 'absolute',
+    top: h / 2 - s / 2,
+    left: w / 2 - s / 2
+  });
+
+  // remove
+  spin.remove = function(){
+    debug('remove');
+    if (appended) el.removeChild(spin.el);
+    spin.stop();
+    clearTimeout(timer);
+  };
+
+  // append
+  var timer = setTimeout(function(){
+    debug('append');
+    appended = true;
+    el.appendChild(spin.el);
+  }, ms);
+
+  return spin;
+};
+
+});
+require.register("components/index.js", function(exports, require, module){
+module.exports = function(name) { return require(name);};
+});
+require.alias("component-calendar/index.js", "components/deps/calendar/index.js");
+require.alias("component-calendar/lib/utils.js", "components/deps/calendar/lib/utils.js");
+require.alias("component-calendar/lib/template.js", "components/deps/calendar/lib/template.js");
+require.alias("component-calendar/lib/calendar.js", "components/deps/calendar/lib/calendar.js");
+require.alias("component-calendar/lib/days.js", "components/deps/calendar/lib/days.js");
+require.alias("component-range/index.js", "component-calendar/deps/range/index.js");
+
+require.alias("component-jquery/index.js", "component-calendar/deps/jquery/index.js");
+
+require.alias("component-emitter/index.js", "component-calendar/deps/emitter/index.js");
+require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
+
+require.alias("component-in-groups-of/index.js", "component-calendar/deps/in-groups-of/index.js");
+
+require.alias("component-spin/index.js", "components/deps/spin/index.js");
+require.alias("component-css/index.js", "component-spin/deps/css/index.js");
+
+require.alias("visionmedia-debug/index.js", "component-spin/deps/debug/index.js");
+require.alias("visionmedia-debug/debug.js", "component-spin/deps/debug/debug.js");
+
+require.alias("component-spinner/index.js", "component-spin/deps/spinner/index.js");
+require.alias("component-autoscale-canvas/index.js", "component-spinner/deps/autoscale-canvas/index.js");
+
+require.alias("component-raf/index.js", "component-spinner/deps/raf/index.js");
+
+if (typeof exports == "object") {
+  module.exports = require("components");
+} else if (typeof define == "function" && define.amd) {
+  define(function(){ return require("components"); });
+} else {
+  window["components"] = require("components");
+}})();

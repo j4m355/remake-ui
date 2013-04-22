@@ -1,8 +1,0 @@
-{
-"name" : "remake-ui",
-"dependencies" : {
-	"component/calendar" : "*",
-	"component/spin" : "*"
-
-}
-}
