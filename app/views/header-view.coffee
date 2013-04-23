@@ -29,9 +29,9 @@ module.exports = class HeaderView extends View
         data: $('#loginForm').serialize()
         success: (e)->
             console.log e
-        error: (e)->
+        error: (xhr, err, status)->
           $('#loginSuccsesAlert').hide()
-          showErrorAlert(e.toString())
+          showErrorAlert(xhr + err + status))
 
   validate = ()=>
     errors = []
