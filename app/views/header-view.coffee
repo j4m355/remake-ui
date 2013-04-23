@@ -28,11 +28,11 @@ module.exports = class HeaderView extends View
         type: "post",
         data: $('#loginForm').serialize()
         success: (e)->
-            console.log e
+          console.log e
         error: (xhr, err, status)->
           $('#loginSuccsesAlert').hide()
           cousin = JSON.parse(xhr.responseText)
-          showErrorAlert(cousin + err + status + "cum monkey"))
+          showErrorAlert(cousin + err + status + "cum monkey")
 
   validate = ()=>
     errors = []
