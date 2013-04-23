@@ -31,7 +31,8 @@ module.exports = class HeaderView extends View
             console.log e
         error: (xhr, err, status)->
           $('#loginSuccsesAlert').hide()
-          showErrorAlert(JSON.parse(xhr.responseText)))
+          cousin = JSON.parse(xhr.responseText)
+          showErrorAlert(cousin + err + status))
 
   validate = ()=>
     errors = []
