@@ -51,12 +51,10 @@ module.exports = class ContactView extends View
     contactEmail = $('#contactEmail').val()
     contactMessage = $('#contactMessage').val()
     contactSource = $('#contactSource').val()
-
     isEmail = validateEmail(contactEmail)
     isPhone = validatePhone(contactEmail)
     console.log "IsEmail: " + isEmail
     console.log "isPhone: " + isPhone
-
     errors.push "<strong>Please fill out the following information: </strong><br>"
     if contactName.length < 1
       errors.push "-Your Name <br>"
@@ -77,7 +75,6 @@ module.exports = class ContactView extends View
         valid = true
       if !valid
         errors.push "-Invalid Phone Number or Email Address <br>"
-
     if errors.length >1
       showErrorAlert(errors)
       return false
