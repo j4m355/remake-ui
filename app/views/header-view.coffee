@@ -29,7 +29,7 @@ module.exports = class HeaderView extends View
         data: $('#loginForm').serialize()
         success: (e)->
           console.log e
-        fail: (xhr, err, status)->
+        error: (xhr, err, status)->
           console.log "Staus: " + status
           console.log "err: " + err
           console.log "error for 401"
