@@ -29,6 +29,9 @@ module.exports = class HeaderView extends View
         data: $('#loginForm').serialize()
         success: (e)->
           console.log e
+        statusCode:
+          401: ()->
+            showErrorAlert("Incorrect Login or Password")
         error: (xhr, err, status)->
           console.log "Staus: " + status
           console.log "err: " + err
