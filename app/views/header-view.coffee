@@ -33,23 +33,18 @@ module.exports = class HeaderView extends View
           401: ()->
             showErrorAlert("Incorrect Login or Password")
         error: (xhr, err, status)->
-          console.log "Staus: " + status
-          console.log "err: " + err
-          console.log "error for 401"
           $('#loginSuccsesAlert').hide()
-          showErrorAlert(xhr.responseText)
+          showErrorAlert("<strong>Whoops - Somethings gone wrong.</strong> You can give us a call on 07519746777 or drop us a mail at doctor@drpcni.com")
 
   validate = ()=>
     errors = []
     loginEmail = $('#loginEmail').val()
     loginPassword = $('#loginPassword').val()
-
     errors.push "<strong>Please fill out the following information: </strong><br>"
     if loginEmail.length < 1
       errors.push "-Your Email <br>"
     if loginPassword.length < 1
       errors.push "-Your Password <br>"
-
     if errors.length >1
       showErrorAlert(errors)
       return false
