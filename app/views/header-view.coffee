@@ -32,7 +32,7 @@ module.exports = class HeaderView extends View
         error: (xhr, err, status)->
           $('#loginSuccsesAlert').hide()
           cousin = JSON.parse(xhr.responseText)
-          showErrorAlert(cousin + err + status + "cum monkey")
+          showErrorAlert(cousin)
 
   validate = ()=>
     errors = []
