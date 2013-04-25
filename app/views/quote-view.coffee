@@ -6,3 +6,9 @@ module.exports = class QuoteView extends View
   className: 'quote-page'
   container: '#page-container'
   template: template
+
+  render:()=>
+    @$el.hide()
+    super    
+    @$el.fadeIn('slow')
+    #@$el.show('slide', {direction : 'right'}, 1000)

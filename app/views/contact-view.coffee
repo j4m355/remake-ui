@@ -12,13 +12,15 @@ module.exports = class ContactView extends View
     @delegate 'click', '#submitContact', @postMessage
     @delegate 'click', '#closeSuccess', @closeSuccess
     @delegate 'click', '#closeError', @closeError
+    Chaplin.mediator.subscribe 'postcodeSearch', @render
 
   render:()=>
     @$el.hide()
     super
     @$('#contactSuccess').hide()
     @$('#contactError').hide()
-    @$el.fadeIn()
+    #@$el.fadeIn()
+    @$el.show('slide', {direction : 'right'}, 1000)
 
 
   postMessage:()=>

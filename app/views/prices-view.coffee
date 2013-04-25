@@ -11,3 +11,4 @@ module.exports = class PricesView extends View
   	@$el.hide()
   	super
   	@$el.fadeIn()
+  	#@$el.show('slide', {direction : 'right'}, 1000)

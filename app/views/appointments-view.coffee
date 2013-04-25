@@ -16,6 +16,7 @@ module.exports = class AppointmentsView extends View
     calendar.el.appendTo(@$('#calendarView'))
     calendar.on 'change', @select
     @$el.fadeIn()
+    #@$el.show('slide', {direction : 'right'}, 1000)
   
   select: (dateOrEvent) =>
     if $(dateOrEvent.currentTarget).text() != "Next"
