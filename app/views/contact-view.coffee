@@ -14,9 +14,12 @@ module.exports = class ContactView extends View
     @delegate 'click', '#closeError', @closeError
 
   render:()=>
+    @$el.hide()
     super
     @$('#contactSuccess').hide()
     @$('#contactError').hide()
+    @$el.fadeIn()
+
 
   postMessage:()=>
     if validate()

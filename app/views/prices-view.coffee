@@ -6,3 +6,8 @@ module.exports = class PricesView extends View
   className: 'prices-page'
   container: '#page-container'
   template: template
+
+  render: ()=>
+  	@$el.hide()
+  	super
+  	@$el.fadeIn()

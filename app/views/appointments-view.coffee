@@ -10,10 +10,12 @@ module.exports = class AppointmentsView extends View
   template: template
 
   render:()=>
-  	super
-  	calendar = new Calendar()
-  	calendar.el.appendTo(@$('#calendarView'))
-  	calendar.on 'change', @select
+    @$el.hide()
+    super
+    calendar = new Calendar()
+    calendar.el.appendTo(@$('#calendarView'))
+    calendar.on 'change', @select
+    @$el.fadeIn()
   
   select: (dateOrEvent) =>
     if $(dateOrEvent.currentTarget).text() != "Next"
