@@ -32,6 +32,8 @@ module.exports = class HeaderView extends View
         statusCode:
           401: ()->
             showErrorAlert("Incorrect Login or Password")
+          502: ()->
+            showErrorAlert("<strong>Whoops - Something has gone wrong</strong> Please try again.")
         error: (xhr, err, status)->
           $('#loginSuccsesAlert').hide()
           showErrorAlert("<strong>Whoops - Somethings gone wrong.</strong> You can give us a call on 07519746777 or drop us a mail at doctor@drpcni.com")
