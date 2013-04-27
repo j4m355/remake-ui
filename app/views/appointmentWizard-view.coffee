@@ -14,7 +14,7 @@ module.exports = class AppointmentWizardView extends View
     super
     mediator.subscribe 'postcodeSearch', @backPassage
 
-  backPassage:(postcode)=>
+  backPassage:()=>
     console.log postcode
     $.ajax
       url: "/api/postcode/?postcode=" + postcode,
