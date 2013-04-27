@@ -1,7 +1,7 @@
 template = require 'views/templates/home'
 View = require 'views/base/view'
 mediator = require 'mediator'
-AppointmentWizardView = require './appointmentwizard-view'
+AppointmentWizardView = require './appointmentWizard-view'
 
 
 module.exports = class HomePageView extends View
