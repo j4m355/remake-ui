@@ -1,6 +1,6 @@
 View = require 'views/base/view'
 template = require 'views/templates/header'
-Spinner = components 'spin'
+Spinner = components 'spin.js'
 
 module.exports = class HeaderView extends View
   autoRender: yes
@@ -22,7 +22,7 @@ module.exports = class HeaderView extends View
 
   doLogin:()=>
     if validate()
-      #spinner = new Spinner({color:'#E8620C', lines: 12, width:1, radius:2}).spin(@$("#spin")[0]);
+      spinner = new Spinner({color:'#E8620C', lines: 12, width:1, radius:2}).spin(@$("#spin")[0]);
       $.ajax
         url: "/api/customer/login",
         type: "post",
