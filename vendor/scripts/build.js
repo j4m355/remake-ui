@@ -200,6 +200,329 @@ require.relative = function(parent) {
 
   return localRequire;
 };
+require.register("esundahl-spin.js/index.js", function(exports, require, module){
+module.exports = require('./spin.js');
+});
+require.register("esundahl-spin.js/spin.js", function(exports, require, module){
+//fgnass.github.com/spin.js#v1.2.7
+!function(window, document, undefined) {
+
+  /**
+   * Copyright (c) 2011 Felix Gnass [fgnass at neteye dot de]
+   * Licensed under the MIT license
+   */
+
+  var prefixes = ['webkit', 'Moz', 'ms', 'O'] /* Vendor prefixes */
+    , animations = {} /* Animation rules keyed by their name */
+    , useCssAnimations
+
+  /**
+   * Utility function to create elements. If no tag name is given,
+   * a DIV is created. Optionally properties can be passed.
+   */
+  function createEl(tag, prop) {
+    var el = document.createElement(tag || 'div')
+      , n
+
+    for(n in prop) el[n] = prop[n]
+    return el
+  }
+
+  /**
+   * Appends children and returns the parent.
+   */
+  function ins(parent /* child1, child2, ...*/) {
+    for (var i=1, n=arguments.length; i<n; i++)
+      parent.appendChild(arguments[i])
+
+    return parent
+  }
+
+  /**
+   * Insert a new stylesheet to hold the @keyframe or VML rules.
+   */
+  var sheet = function() {
+    var el = createEl('style', {type : 'text/css'})
+    ins(document.getElementsByTagName('head')[0], el)
+    return el.sheet || el.styleSheet
+  }()
+
+  /**
+   * Creates an opacity keyframe animation rule and returns its name.
+   * Since most mobile Webkits have timing issues with animation-delay,
+   * we create separate rules for each line/segment.
+   */
+  function addAnimation(alpha, trail, i, lines) {
+    var name = ['opacity', trail, ~~(alpha*100), i, lines].join('-')
+      , start = 0.01 + i/lines*100
+      , z = Math.max(1 - (1-alpha) / trail * (100-start), alpha)
+      , prefix = useCssAnimations.substring(0, useCssAnimations.indexOf('Animation')).toLowerCase()
+      , pre = prefix && '-'+prefix+'-' || ''
+
+    if (!animations[name]) {
+      sheet.insertRule(
+        '@' + pre + 'keyframes ' + name + '{' +
+        '0%{opacity:' + z + '}' +
+        start + '%{opacity:' + alpha + '}' +
+        (start+0.01) + '%{opacity:1}' +
+        (start+trail) % 100 + '%{opacity:' + alpha + '}' +
+        '100%{opacity:' + z + '}' +
+        '}', sheet.cssRules.length)
+
+      animations[name] = 1
+    }
+    return name
+  }
+
+  /**
+   * Tries various vendor prefixes and returns the first supported property.
+   **/
+  function vendor(el, prop) {
+    var s = el.style
+      , pp
+      , i
+
+    if(s[prop] !== undefined) return prop
+    prop = prop.charAt(0).toUpperCase() + prop.slice(1)
+    for(i=0; i<prefixes.length; i++) {
+      pp = prefixes[i]+prop
+      if(s[pp] !== undefined) return pp
+    }
+  }
+
+  /**
+   * Sets multiple style properties at once.
+   */
+  function css(el, prop) {
+    for (var n in prop)
+      el.style[vendor(el, n)||n] = prop[n]
+
+    return el
+  }
+
+  /**
+   * Fills in default values.
+   */
+  function merge(obj) {
+    for (var i=1; i < arguments.length; i++) {
+      var def = arguments[i]
+      for (var n in def)
+        if (obj[n] === undefined) obj[n] = def[n]
+    }
+    return obj
+  }
+
+  /**
+   * Returns the absolute page-offset of the given element.
+   */
+  function pos(el) {
+    var o = { x:el.offsetLeft, y:el.offsetTop }
+    while((el = el.offsetParent))
+      o.x+=el.offsetLeft, o.y+=el.offsetTop
+
+    return o
+  }
+
+  var defaults = {
+    lines: 12,            // The number of lines to draw
+    length: 7,            // The length of each line
+    width: 5,             // The line thickness
+    radius: 10,           // The radius of the inner circle
+    rotate: 0,            // Rotation offset
+    corners: 1,           // Roundness (0..1)
+    color: '#000',        // #rgb or #rrggbb
+    speed: 1,             // Rounds per second
+    trail: 100,           // Afterglow percentage
+    opacity: 1/4,         // Opacity of the lines
+    fps: 20,              // Frames per second when using setTimeout()
+    zIndex: 2e9,          // Use a high z-index by default
+    className: 'spinner', // CSS class to assign to the element
+    top: 'auto',          // center vertically
+    left: 'auto',         // center horizontally
+    position: 'relative'  // element position
+  }
+
+  /** The constructor */
+  var Spinner = function Spinner(o) {
+    if (!this.spin) return new Spinner(o)
+    this.opts = merge(o || {}, Spinner.defaults, defaults)
+  }
+
+  Spinner.defaults = {}
+
+  merge(Spinner.prototype, {
+    spin: function(target) {
+      this.stop()
+      var self = this
+        , o = self.opts
+        , el = self.el = css(createEl(0, {className: o.className}), {position: o.position, width: 0, zIndex: o.zIndex})
+        , mid = o.radius+o.length+o.width
+        , ep // element position
+        , tp // target position
+
+      if (target) {
+        target.insertBefore(el, target.firstChild||null)
+        tp = pos(target)
+        ep = pos(el)
+        css(el, {
+          left: (o.left == 'auto' ? tp.x-ep.x + (target.offsetWidth >> 1) : parseInt(o.left, 10) + mid) + 'px',
+          top: (o.top == 'auto' ? tp.y-ep.y + (target.offsetHeight >> 1) : parseInt(o.top, 10) + mid)  + 'px'
+        })
+      }
+
+      el.setAttribute('aria-role', 'progressbar')
+      self.lines(el, self.opts)
+
+      if (!useCssAnimations) {
+        // No CSS animation support, use setTimeout() instead
+        var i = 0
+          , fps = o.fps
+          , f = fps/o.speed
+          , ostep = (1-o.opacity) / (f*o.trail / 100)
+          , astep = f/o.lines
+
+        ;(function anim() {
+          i++;
+          for (var s=o.lines; s; s--) {
+            var alpha = Math.max(1-(i+s*astep)%f * ostep, o.opacity)
+            self.opacity(el, o.lines-s, alpha, o)
+          }
+          self.timeout = self.el && setTimeout(anim, ~~(1000/fps))
+        })()
+      }
+      return self
+    },
+
+    stop: function() {
+      var el = this.el
+      if (el) {
+        clearTimeout(this.timeout)
+        if (el.parentNode) el.parentNode.removeChild(el)
+        this.el = undefined
+      }
+      return this
+    },
+
+    lines: function(el, o) {
+      var i = 0
+        , seg
+
+      function fill(color, shadow) {
+        return css(createEl(), {
+          position: 'absolute',
+          width: (o.length+o.width) + 'px',
+          height: o.width + 'px',
+          background: color,
+          boxShadow: shadow,
+          transformOrigin: 'left',
+          transform: 'rotate(' + ~~(360/o.lines*i+o.rotate) + 'deg) translate(' + o.radius+'px' +',0)',
+          borderRadius: (o.corners * o.width>>1) + 'px'
+        })
+      }
+
+      for (; i < o.lines; i++) {
+        seg = css(createEl(), {
+          position: 'absolute',
+          top: 1+~(o.width/2) + 'px',
+          transform: o.hwaccel ? 'translate3d(0,0,0)' : '',
+          opacity: o.opacity,
+          animation: useCssAnimations && addAnimation(o.opacity, o.trail, i, o.lines) + ' ' + 1/o.speed + 's linear infinite'
+        })
+
+        if (o.shadow) ins(seg, css(fill('#000', '0 0 4px ' + '#000'), {top: 2+'px'}))
+
+        ins(el, ins(seg, fill(o.color, '0 0 1px rgba(0,0,0,.1)')))
+      }
+      return el
+    },
+
+    opacity: function(el, i, val) {
+      if (i < el.childNodes.length) el.childNodes[i].style.opacity = val
+    }
+
+  })
+
+  /////////////////////////////////////////////////////////////////////////
+  // VML rendering for IE
+  /////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Check and init VML support
+   */
+  ;(function() {
+
+    function vml(tag, attr) {
+      return createEl('<' + tag + ' xmlns="urn:schemas-microsoft.com:vml" class="spin-vml">', attr)
+    }
+
+    var s = css(createEl('group'), {behavior: 'url(#default#VML)'})
+
+    if (!vendor(s, 'transform') && s.adj) {
+
+      // VML support detected. Insert CSS rule ...
+      sheet.addRule('.spin-vml', 'behavior:url(#default#VML)')
+
+      Spinner.prototype.lines = function(el, o) {
+        var r = o.length+o.width
+          , s = 2*r
+
+        function grp() {
+          return css(
+            vml('group', {
+              coordsize: s + ' ' + s,
+              coordorigin: -r + ' ' + -r
+            }),
+            { width: s, height: s }
+          )
+        }
+
+        var margin = -(o.width+o.length)*2 + 'px'
+          , g = css(grp(), {position: 'absolute', top: margin, left: margin})
+          , i
+
+        function seg(i, dx, filter) {
+          ins(g,
+            ins(css(grp(), {rotation: 360 / o.lines * i + 'deg', left: ~~dx}),
+              ins(css(vml('roundrect', {arcsize: o.corners}), {
+                  width: r,
+                  height: o.width,
+                  left: o.radius,
+                  top: -o.width>>1,
+                  filter: filter
+                }),
+                vml('fill', {color: o.color, opacity: o.opacity}),
+                vml('stroke', {opacity: 0}) // transparent stroke to fix color bleeding upon opacity change
+              )
+            )
+          )
+        }
+
+        if (o.shadow)
+          for (i = 1; i <= o.lines; i++)
+            seg(i, -2, 'progid:DXImageTransform.Microsoft.Blur(pixelradius=2,makeshadow=1,shadowopacity=.3)')
+
+        for (i = 1; i <= o.lines; i++) seg(i)
+        return ins(el, g)
+      }
+
+      Spinner.prototype.opacity = function(el, i, val, o) {
+        var c = el.firstChild
+        o = o.shadow && o.lines || 0
+        if (c && i+o < c.childNodes.length) {
+          c = c.childNodes[i+o]; c = c && c.firstChild; c = c && c.firstChild
+          if (c) c.opacity = val
+        }
+      }
+    }
+    else
+      useCssAnimations = vendor(s, 'animation')
+  })()
+
+  module.exports = Spinner;
+
+}(window, document);
+
+});
 require.register("component-range/index.js", function(exports, require, module){
 
 module.exports = function(from, to, inclusive){
@@ -10659,495 +10982,12 @@ function monthOption(month, i) {
 }
 
 });
-require.register("component-css/index.js", function(exports, require, module){
-
-/**
- * Properties to ignore appending "px".
- */
-
-var ignore = {
-  columnCount: true,
-  fillOpacity: true,
-  fontWeight: true,
-  lineHeight: true,
-  opacity: true,
-  orphans: true,
-  widows: true,
-  zIndex: true,
-  zoom: true
-};
-
-/**
- * Set `el` css values.
- *
- * @param {Element} el
- * @param {Object} obj
- * @return {Element}
- * @api public
- */
-
-module.exports = function(el, obj){
-  for (var key in obj) {
-    var val = obj[key];
-    if ('number' == typeof val && !ignore[key]) val += 'px';
-    el.style[key] = val;
-  }
-  return el;
-};
-
-});
-require.register("visionmedia-debug/index.js", function(exports, require, module){
-if ('undefined' == typeof window) {
-  module.exports = require('./lib/debug');
-} else {
-  module.exports = require('./debug');
-}
-
-});
-require.register("visionmedia-debug/debug.js", function(exports, require, module){
-
-/**
- * Expose `debug()` as the module.
- */
-
-module.exports = debug;
-
-/**
- * Create a debugger with the given `name`.
- *
- * @param {String} name
- * @return {Type}
- * @api public
- */
-
-function debug(name) {
-  if (!debug.enabled(name)) return function(){};
-
-  return function(fmt){
-    fmt = coerce(fmt);
-
-    var curr = new Date;
-    var ms = curr - (debug[name] || curr);
-    debug[name] = curr;
-
-    fmt = name
-      + ' '
-      + fmt
-      + ' +' + debug.humanize(ms);
-
-    // This hackery is required for IE8
-    // where `console.log` doesn't have 'apply'
-    window.console
-      && console.log
-      && Function.prototype.apply.call(console.log, console, arguments);
-  }
-}
-
-/**
- * The currently active debug mode names.
- */
-
-debug.names = [];
-debug.skips = [];
-
-/**
- * Enables a debug mode by name. This can include modes
- * separated by a colon and wildcards.
- *
- * @param {String} name
- * @api public
- */
-
-debug.enable = function(name) {
-  try {
-    localStorage.debug = name;
-  } catch(e){}
-
-  var split = (name || '').split(/[\s,]+/)
-    , len = split.length;
-
-  for (var i = 0; i < len; i++) {
-    name = split[i].replace('*', '.*?');
-    if (name[0] === '-') {
-      debug.skips.push(new RegExp('^' + name.substr(1) + '$'));
-    }
-    else {
-      debug.names.push(new RegExp('^' + name + '$'));
-    }
-  }
-};
-
-/**
- * Disable debug output.
- *
- * @api public
- */
-
-debug.disable = function(){
-  debug.enable('');
-};
-
-/**
- * Humanize the given `ms`.
- *
- * @param {Number} m
- * @return {String}
- * @api private
- */
-
-debug.humanize = function(ms) {
-  var sec = 1000
-    , min = 60 * 1000
-    , hour = 60 * min;
-
-  if (ms >= hour) return (ms / hour).toFixed(1) + 'h';
-  if (ms >= min) return (ms / min).toFixed(1) + 'm';
-  if (ms >= sec) return (ms / sec | 0) + 's';
-  return ms + 'ms';
-};
-
-/**
- * Returns true if the given mode name is enabled, false otherwise.
- *
- * @param {String} name
- * @return {Boolean}
- * @api public
- */
-
-debug.enabled = function(name) {
-  for (var i = 0, len = debug.skips.length; i < len; i++) {
-    if (debug.skips[i].test(name)) {
-      return false;
-    }
-  }
-  for (var i = 0, len = debug.names.length; i < len; i++) {
-    if (debug.names[i].test(name)) {
-      return true;
-    }
-  }
-  return false;
-};
-
-/**
- * Coerce `val`.
- */
-
-function coerce(val) {
-  if (val instanceof Error) return val.stack || val.message;
-  return val;
-}
-
-// persist
-
-if (window.localStorage) debug.enable(localStorage.debug);
-
-});
-require.register("component-autoscale-canvas/index.js", function(exports, require, module){
-
-/**
- * Retina-enable the given `canvas`.
- *
- * @param {Canvas} canvas
- * @return {Canvas}
- * @api public
- */
-
-module.exports = function(canvas){
-  var ctx = canvas.getContext('2d');
-  var ratio = window.devicePixelRatio || 1;
-  if (1 != ratio) {
-    canvas.style.width = canvas.width + 'px';
-    canvas.style.height = canvas.height + 'px';
-    canvas.width *= ratio;
-    canvas.height *= ratio;
-    ctx.scale(ratio, ratio);
-  }
-  return canvas;
-};
-});
-require.register("component-raf/index.js", function(exports, require, module){
-
-module.exports = window.requestAnimationFrame
-  || window.webkitRequestAnimationFrame
-  || window.mozRequestAnimationFrame
-  || window.oRequestAnimationFrame
-  || window.msRequestAnimationFrame
-  || fallback;
-
-var prev = new Date().getTime();
-function fallback(fn) {
-  var curr = new Date().getTime();
-  var ms = Math.max(0, 16 - (curr - prev));
-  setTimeout(fn, ms);
-  prev = curr;
-}
-
-});
-require.register("component-spinner/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var autoscale = require('autoscale-canvas');
-var raf = require('raf');
-
-/**
- * Expose `Spinner`.
- */
-
-module.exports = Spinner;
-
-/**
- * Initialize a new `Spinner`.
- */
-
-function Spinner() {
-  var self = this;
-  this.percent = 0;
-  this.el = document.createElement('canvas');
-  this.ctx = this.el.getContext('2d');
-  this.size(50);
-  this.fontSize(11);
-  this.speed(60);
-  this.font('helvetica, arial, sans-serif');
-  this.stopped = false;
-
-  (function animate() {
-    if (self.stopped) return;
-    raf(animate);
-    self.percent = (self.percent + self._speed / 36) % 100;
-    self.draw(self.ctx);
-  })();
-}
-
-/**
- * Stop the animation.
- *
- * @api public
- */
-
-Spinner.prototype.stop = function(){
-  this.stopped = true;
-};
-
-/**
- * Set spinner size to `n`.
- *
- * @param {Number} n
- * @return {Spinner}
- * @api public
- */
-
-Spinner.prototype.size = function(n){
-  this.el.width = n;
-  this.el.height = n;
-  autoscale(this.el);
-  return this;
-};
-
-/**
- * Set text to `str`.
- *
- * @param {String} str
- * @return {Spinner}
- * @api public
- */
-
-Spinner.prototype.text = function(str){
-  this._text = str;
-  return this;
-};
-
-/**
- * Set font size to `n`.
- *
- * @param {Number} n
- * @return {Spinner}
- * @api public
- */
-
-Spinner.prototype.fontSize = function(n){
-  this._fontSize = n;
-  return this;
-};
-
-/**
- * Set font `family`.
- *
- * @param {String} family
- * @return {Spinner}
- * @api public
- */
-
-Spinner.prototype.font = function(family){
-  this._font = family;
-  return this;
-};
-
-/**
- * Set speed to `n` rpm.
- *
- * @param {Number} n
- * @return {Spinner}
- * @api public
- */
-
-Spinner.prototype.speed = function(n) {
-  this._speed = n;
-  return this;
-};
-
-/**
- * Make the spinner light colored.
- *
- * @return {Spinner}
- * @api public
- */
-
-Spinner.prototype.light = function(){
-  this._light = true;
-  return this;
-};
-
-/**
- * Draw on `ctx`.
- *
- * @param {CanvasRenderingContext2d} ctx
- * @return {Spinner}
- * @api private
- */
-
-Spinner.prototype.draw = function(ctx){
-  var percent = Math.min(this.percent, 100)
-    , ratio = window.devicePixelRatio || 1
-    , size = this.el.width / ratio
-    , half = size / 2
-    , x = half
-    , y = half
-    , rad = half - 1
-    , fontSize = this._fontSize
-    , light = this._light;
-
-  ctx.font = fontSize + 'px ' + this._font;
-
-  var angle = Math.PI * 2 * (percent / 100);
-  ctx.clearRect(0, 0, size, size);
-
-  // outer circle
-  var grad = ctx.createLinearGradient(
-    half + Math.sin(Math.PI * 1.5 - angle) * half,
-    half + Math.cos(Math.PI * 1.5 - angle) * half,
-    half + Math.sin(Math.PI * 0.5 - angle) * half,
-    half + Math.cos(Math.PI * 0.5 - angle) * half
-  );
-
-  // color
-  if (light) {
-    grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
-    grad.addColorStop(1, 'rgba(255, 255, 255, 1)');
-  } else {
-    grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    grad.addColorStop(1, 'rgba(0, 0, 0, 1)');
-  }
-
-  ctx.strokeStyle = grad;
-  ctx.beginPath();
-  ctx.arc(x, y, rad, angle - Math.PI, angle, false);
-  ctx.stroke();
-
-  // inner circle
-  ctx.strokeStyle = light ? 'rgba(255, 255, 255, .4)' : '#eee';
-  ctx.beginPath();
-  ctx.arc(x, y, rad - 1, 0, Math.PI * 2, true);
-  ctx.stroke();
-
-  // text
-  var text = this._text || ''
-    , w = ctx.measureText(text).width;
-
-  if (light) ctx.fillStyle = 'rgba(255, 255, 255, .9)';
-  ctx.fillText(
-      text
-    , x - w / 2 + 1
-    , y + fontSize / 2 - 1);
-
-  return this;
-};
-
-
-});
-require.register("component-spin/index.js", function(exports, require, module){
-
-/**
- * Module dependencies.
- */
-
-var Spinner = require('spinner')
-  , debug = require('debug')('spin')
-  , css = require('css');
-
-/**
- * Add a spinner to `el`,
- * and adjust size and position
- * based on `el`'s box.
- *
- * Options:
- *
- *    - `delay` milliseconds defaulting to 300
- *    - `size` size defaults to 1/5th the parent dimensions
- *
- * @param {Element} el
- * @param {Object} options
- * @return {Spinner}
- * @api public
- */
-
-module.exports = function(el, options){
-  if (!el) throw new Error('element required');
-
-  var appended = false;
-  var spin = new Spinner(el);
-  options = options || {};
-  var ms = options.delay || 300;
-
-  var w = el.offsetWidth;
-  var h = el.offsetHeight;
-
-  // size
-  var s = options.size || w / 5;
-  spin.size(s);
-  debug('show %dpx (%dms)', s, ms);
-
-  // position
-  css(spin.el, {
-    position: 'absolute',
-    top: h / 2 - s / 2,
-    left: w / 2 - s / 2
-  });
-
-  // remove
-  spin.remove = function(){
-    debug('remove');
-    if (appended) el.removeChild(spin.el);
-    spin.stop();
-    clearTimeout(timer);
-  };
-
-  // append
-  var timer = setTimeout(function(){
-    debug('append');
-    appended = true;
-    el.appendChild(spin.el);
-  }, ms);
-
-  return spin;
-};
-
-});
 require.register("components/index.js", function(exports, require, module){
 module.exports = function(name) { return require(name);};
 });
+require.alias("esundahl-spin.js/index.js", "components/deps/spin.js/index.js");
+require.alias("esundahl-spin.js/spin.js", "components/deps/spin.js/spin.js");
+
 require.alias("component-calendar/index.js", "components/deps/calendar/index.js");
 require.alias("component-calendar/lib/utils.js", "components/deps/calendar/lib/utils.js");
 require.alias("component-calendar/lib/template.js", "components/deps/calendar/lib/template.js");
@@ -11161,17 +11001,6 @@ require.alias("component-emitter/index.js", "component-calendar/deps/emitter/ind
 require.alias("component-indexof/index.js", "component-emitter/deps/indexof/index.js");
 
 require.alias("component-in-groups-of/index.js", "component-calendar/deps/in-groups-of/index.js");
-
-require.alias("component-spin/index.js", "components/deps/spin/index.js");
-require.alias("component-css/index.js", "component-spin/deps/css/index.js");
-
-require.alias("visionmedia-debug/index.js", "component-spin/deps/debug/index.js");
-require.alias("visionmedia-debug/debug.js", "component-spin/deps/debug/debug.js");
-
-require.alias("component-spinner/index.js", "component-spin/deps/spinner/index.js");
-require.alias("component-autoscale-canvas/index.js", "component-spinner/deps/autoscale-canvas/index.js");
-
-require.alias("component-raf/index.js", "component-spinner/deps/raf/index.js");
 
 if (typeof exports == "object") {
   module.exports = require("components");

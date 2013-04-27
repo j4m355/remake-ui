@@ -21,9 +21,18 @@ module.exports = class HomePageView extends View
     @$el.fadeIn()
     #@$el.show('slide', {direction : 'right'}, 1000)
 
+
+
   postcodeSearch:(e)=>
     if e.keyCode is 13
-      dingo = new AppointmentWizardView()
-      theZep = @$('#postcodeBox').val()
-      mediator.publish 'postcodeSearch', theZep
-      @dispose()
+      #dingo = new AppointmentWizardView()
+      postcode = @$('#postcodeBox').val()
+      #mediator.publish 'postcodeSearch', theZep
+      #@dispose()
+      $.ajax
+      url: "/api/postcode/?postcode=" + postcode,
+      type: "post"
+      error: (e)->
+        console.log e
+      success: (e)->
+        console.log e
