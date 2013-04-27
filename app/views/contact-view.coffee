@@ -1,5 +1,6 @@
 template = require 'views/templates/contact'
 View = require 'views/base/view'
+mediator = require 'mediator'
 
 module.exports = class ContactView extends View
   autoRender: yes
@@ -12,15 +13,18 @@ module.exports = class ContactView extends View
     @delegate 'click', '#submitContact', @postMessage
     @delegate 'click', '#closeSuccess', @closeSuccess
     @delegate 'click', '#closeError', @closeError
-    Chaplin.mediator.subscribe 'postcodeSearch', @render
+    #@subscribeEvent 'postcodeSearch', @backPassage
 
   render:()=>
     @$el.hide()
     super
     @$('#contactSuccess').hide()
     @$('#contactError').hide()
-    #@$el.fadeIn()
-    @$el.show('slide', {direction : 'right'}, 1000)
+    @$el.fadeIn()
+    #@$el.show('slide', {direction : 'right'}, 1000)
+
+  backPassage:()=>
+    console.log "egg"
 
 
   postMessage:()=>

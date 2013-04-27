@@ -1,4 +1,5 @@
 Chaplin = require 'chaplin'
+mediator = require 'mediator'
 routes = require 'routes'
 
 # The application object.
@@ -21,6 +22,7 @@ module.exports = class Application extends Chaplin.Application
 
     # Composer grants the ability for views and stuff to be persisted.
     @initComposer()
+
 
     # Mediator is a global message broker which implements pub / sub pattern.
     @initMediator()

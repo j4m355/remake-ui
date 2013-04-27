@@ -10,5 +10,5 @@ module.exports = class QuoteView extends View
   render:()=>
     @$el.hide()
     super    
-    @$el.fadeIn('slow')
+    @$el.fadeIn()
     #@$el.show('slide', {direction : 'right'}, 1000)

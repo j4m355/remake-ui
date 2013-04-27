@@ -1,13 +1,30 @@
-template = require 'views/templates/appointments'
+template = require 'views/templates/appointmentwizard'
 View = require 'views/base/view'
+mediator = require 'mediator'
 
 Calendar = components('calendar')
 
-module.exports = class AppointmentsView extends View
+module.exports = class AppointmentWizardView extends View
   autoRender: yes
-  className: 'appointments-page'
-  container: '#appointmentWizard-container'
+  className: 'contact-page'
+  container: '#page-container'
   template: template
+
+  initialise:()=>
+    super
+    mediator.subscribe 'postcodeSearch', @backPassage
+
+  backPassage:(postcode)=>
+    console.log postcode
+    $.ajax
+      url: "/api/postcode/?postcode=" + postcode,
+      type: "post"
+      error: (e)->
+        console.log e
+      success: (e)->
+        console.log e
+
+    console.log "linesman"
 
   render:()=>
   	super
