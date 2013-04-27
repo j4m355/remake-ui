@@ -28,13 +28,14 @@ module.exports = class HomePageView extends View
     if e.keyCode is 13
       #spinner = new Spinner({color:'#E8620C', lines: 12, width:1, radius:2}).spin(@$("#spin")[0]);
       #dingo = new AppointmentWizardView()
-      postcode = @$('#postcodeBox').val()
+      postcodeSend = @$('#postcodeBox').val()
       #mediator.publish 'postcodeSearch', theZep
       #@dispose()
-      console.log postcode
+      console.log postcodeSend
       $.ajax
-      url: "/api/postcode?postcode=" + postcode,
-      type: "post"
+      url: "/api/postcode",
+      type: "post",
+      data: {postcode : postcodeSend}
       error: (e)->
         console.log e
       success: (e)->
