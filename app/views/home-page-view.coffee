@@ -24,5 +24,5 @@ module.exports = class HomePageView extends View
   postcodeSearch:(e)=>
     if e.keyCode is 13
       dingo = new AppointmentWizardView()
-      mediator.publish 'postcodeSearch', @$('#postcodeBox').val
+      mediator.publish 'postcodeSearch', @$('#postcodeBox').val()
       @dispose()
