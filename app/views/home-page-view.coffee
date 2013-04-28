@@ -33,10 +33,10 @@ module.exports = class HomePageView extends View
       #@dispose()
       console.log postcodeSend
       $.ajax
-      url: "/api/postcode",
-      type: "post",
-      data: @$('#postcodeBox').serialize()
-      error: (e)->
-        console.log e
-      success: (e)->
-        console.log e
+        url: "/api/postcode",
+        type: "post",
+        data: @$('#postcodeBox').serialize()
+        error: (e)->
+          console.log e
+        success: (e)->
+          console.log e
