@@ -35,7 +35,7 @@ module.exports = class HomePageView extends View
       $.ajax
       url: "/api/postcode",
       type: "post",
-      data: {postcode : postcodeSend}
+      data: @$('#postcodeBox').serialize()
       error: (e)->
         console.log e
       success: (e)->
