@@ -1,6 +1,5 @@
 View = require 'views/base/view'
 template = require 'views/templates/header'
-Spinner = components 'spin'
 
 module.exports = class HeaderView extends View
   autoRender: yes
