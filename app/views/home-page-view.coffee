@@ -32,7 +32,6 @@ module.exports = class HomePageView extends View
         data: $('#postcodeBox').serialize()
         success: (jqXhr, textStatus)->
           console.log jqXhr
-          console.log textStatus
         error: ()->
           console.log "error"
 
