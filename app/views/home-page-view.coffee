@@ -22,8 +22,6 @@ module.exports = class HomePageView extends View
     @$el.fadeIn()
     #@$el.show('slide', {direction : 'right'}, 1000)
 
-
-
   postcodeSearch:(e)=>
     if e.keyCode is 13
       $.ajax
