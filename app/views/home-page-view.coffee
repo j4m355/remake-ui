@@ -30,8 +30,8 @@ module.exports = class HomePageView extends View
         url: "/api/postcode",
         type: "post",
         data: $('#postcodeBox').serialize()
-        success: ()->
-          console.log "success"
+        success: (xhr, err, status)->
+          console.log xhr.responsetext
         error: ()->
           console.log "error"
 
