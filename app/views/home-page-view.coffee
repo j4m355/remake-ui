@@ -26,17 +26,13 @@ module.exports = class HomePageView extends View
 
   postcodeSearch:(e)=>
     if e.keyCode is 13
-      #spinner = new Spinner({color:'#E8620C', lines: 12, width:1, radius:2}).spin(@$("#spin")[0]);
-      #dingo = new AppointmentWizardView()
-      postcodeSend = @$('#postcodeBox').val()
-      #mediator.publish 'postcodeSearch', theZep
-      #@dispose()
-      console.log postcodeSend
       $.ajax
         url: "/api/postcode",
         type: "post",
-        data: @$('#postcodeBox').serialize()
-        error: (e)->
-          console.log e
-        success: (e)->
-          console.log e
+        data: $('#postcodeBox').serialize()
+        success: ()->
+          console.log "success"
+        error: ()->
+          console.log "error"
+
+      
